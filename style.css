@@ -7,6 +7,8 @@
     --accent-hover: #2563eb;
     --border-color: #334155;
     --input-bg: #020617;
+    --slot-bg: #111827;
+    --slot-hover: #374151;
     --radius: 8px;
     --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
@@ -23,49 +25,50 @@ body {
     color: var(--text-primary);
     line-height: 1.5;
     height: 100vh;
-    overflow: hidden; /* App-like feel */
+    overflow: hidden;
 }
 
 .container {
     display: flex;
     flex-direction: column;
     height: 100%;
-    max-width: 1400px;
-    margin: 0 auto;
+    max-width: 100%;
     padding: 1rem;
 }
 
 header {
-    padding-bottom: 1rem;
+    padding-bottom: 0.5rem;
     border-bottom: 1px solid var(--border-color);
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
+    flex-shrink: 0;
 }
 
 header h1 {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 600;
 }
 
 header p {
     color: var(--text-secondary);
-    font-size: 0.875rem;
+    font-size: 0.8rem;
 }
 
 main {
     display: flex;
     flex: 1;
-    gap: 1.5rem;
+    gap: 1rem;
     overflow: hidden;
+    min-height: 0;
 }
 
-/* Controls Sidebar */
+/* 1. Left Sidebar */
 .controls {
-    width: 320px;
+    width: 250px;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1rem;
     overflow-y: auto;
-    padding-right: 0.5rem;
+    flex-shrink: 0;
 }
 
 .control-group {
@@ -77,90 +80,177 @@ main {
 }
 
 .control-group h2 {
-    font-size: 1rem;
-    margin-bottom: 1rem;
-    color: var(--text-primary);
-    font-weight: 500;
-}
-
-.file-input-wrapper {
+    font-size: 0.9rem;
     margin-bottom: 0.75rem;
+    color: var(--accent-color);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
-.file-input-wrapper label {
-    display: block;
-    font-size: 0.8rem;
-    color: var(--text-secondary);
+/* 2. Middle Work Area */
+.work-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 400px;
+}
+
+.source-panel {
+    flex: 2;
+    background-color: var(--surface-color);
+    border-radius: var(--radius);
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    min-height: 0;
+}
+
+.source-panel h3 {
+    font-size: 1rem;
     margin-bottom: 0.25rem;
 }
 
-input[type="file"] {
-    width: 100%;
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    background: var(--input-bg);
-    padding: 0.5rem;
-    border-radius: 4px;
-    border: 1px solid var(--border-color);
-    cursor: pointer;
-}
-
-input[type="file"]::-webkit-file-upload-button {
-    background: var(--accent-color);
-    color: white;
-    border: none;
-    padding: 0.25rem 0.75rem;
-    border-radius: 4px;
-    margin-right: 0.5rem;
-    cursor: pointer;
-    font-size: 0.8rem;
-    transition: background 0.2s;
-}
-
-input[type="file"]::-webkit-file-upload-button:hover {
-    background: var(--accent-hover);
-}
-
-.setting-item {
-    margin-bottom: 1rem;
-}
-
-.setting-item label {
-    display: block;
+.instruction {
     font-size: 0.8rem;
     color: var(--text-secondary);
     margin-bottom: 0.5rem;
 }
 
-input[type="number"] {
-    width: 100%;
-    background: var(--input-bg);
+.canvas-wrapper {
+    flex: 1;
+    overflow: auto;
+    background-color: var(--input-bg);
     border: 1px solid var(--border-color);
-    color: var(--text-primary);
-    padding: 0.5rem;
-    border-radius: 4px;
+    position: relative;
+    /* Checkerboard */
+    background-image:
+        linear-gradient(45deg, #1e293b 25%, transparent 25%),
+        linear-gradient(-45deg, #1e293b 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #1e293b 75%),
+        linear-gradient(-45deg, transparent 75%, #1e293b 75%);
+    background-size: 20px 20px;
 }
 
-.radio-group {
-    display: flex;
-    gap: 1rem;
+#source-canvas {
+    cursor: grab;
 }
 
-.radio-group label {
+.slots-panel {
+    flex: 1;
+    background-color: var(--surface-color);
+    border-radius: var(--radius);
+    border: 1px solid var(--border-color);
+    padding: 1rem;
     display: flex;
+    justify-content: center;
     align-items: center;
-    gap: 0.5rem;
-    color: var(--text-primary);
-    cursor: pointer;
+    min-height: 200px;
+    flex-shrink: 0;
 }
 
-.actions {
+.slot-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    width: 100%;
+    max-width: 500px;
+}
+
+.slot {
+    background-color: var(--slot-bg);
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius);
+    padding: 0.5rem;
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    margin-top: auto;
+    align-items: center;
+    justify-content: center;
+    min-height: 100px;
+    transition: all 0.2s;
+    position: relative;
 }
 
+.slot.drag-over {
+    border-color: var(--accent-color);
+    background-color: var(--slot-hover);
+}
+
+.slot.filled {
+    border-style: solid;
+    border-color: var(--accent-color);
+}
+
+.slot-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+    text-align: center;
+}
+
+.slot-content {
+    width: 64px;
+    height: 64px;
+    background-color: rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.slot-content canvas {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+/* 3. Right Preview Area */
+.preview-area {
+    width: 400px;
+    background-color: var(--surface-color);
+    border-radius: var(--radius);
+    border: 1px solid var(--border-color);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+.preview-area h3 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.canvas-container {
+    flex: 1;
+    background-color: #000;
+    border: 1px solid var(--border-color);
+    position: relative;
+    overflow: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-image:
+        linear-gradient(45deg, #1e293b 25%, transparent 25%),
+        linear-gradient(-45deg, #1e293b 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #1e293b 75%),
+        linear-gradient(-45deg, transparent 75%, #1e293b 75%);
+    background-size: 20px 20px;
+}
+
+#preview-canvas {
+    display: block;
+    max-width: 100%;
+}
+
+#placeholder-text {
+    position: absolute;
+    color: var(--text-secondary);
+    pointer-events: none;
+    font-size: 0.9rem;
+}
+
+/* Inputs & Buttons from previous step */
 button {
     width: 100%;
     padding: 0.75rem;
@@ -195,43 +285,24 @@ button {
     cursor: not-allowed;
 }
 
-/* Preview Area */
-.preview-area {
-    flex: 1;
-    background-color: #000000; /* Darker bg for contrast */
-    border-radius: var(--radius);
+.error-msg {
+    color: #ef4444;
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+    text-align: center;
+}
+
+input[type="number"] {
+    width: 100%;
+    background: var(--input-bg);
     border: 1px solid var(--border-color);
-    position: relative;
-    overflow: auto;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-image: 
-        linear-gradient(45deg, #1e293b 25%, transparent 25%), 
-        linear-gradient(-45deg, #1e293b 25%, transparent 25%), 
-        linear-gradient(45deg, transparent 75%, #1e293b 75%), 
-        linear-gradient(-45deg, transparent 75%, #1e293b 75%);
-    background-size: 20px 20px;
-    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+    color: var(--text-primary);
+    padding: 0.5rem;
+    border-radius: 4px;
 }
 
-.canvas-container {
-    position: relative;
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
-    background: transparent; /* Allow checkerboard to show through if transparent */
-}
-
-canvas {
-    display: block;
-    max-width: 100%;
-    height: auto;
-}
-
-#placeholder-text {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+input[type="file"] {
+    width: 100%;
     color: var(--text-secondary);
-    pointer-events: none;
+    font-size: 0.8rem;
 }

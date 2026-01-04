@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
+
 <body>
     <div class="container">
         <header>
@@ -18,33 +20,26 @@
         </header>
 
         <main>
+            <!-- Left Sidebar: Inputs & Settings -->
             <aside class="controls">
                 <div class="control-group">
-                    <h2>Input Images</h2>
+                    <h2>1. Source Image</h2>
                     <div class="file-input-wrapper">
-                        <label for="input-outer-corner">Outer Corner (Top-Left)</label>
-                        <input type="file" id="input-outer-corner" accept="image/png">
-                    </div>
-                    <div class="file-input-wrapper">
-                        <label for="input-inner-corner">Inner Corner (Top-Left)</label>
-                        <input type="file" id="input-inner-corner" accept="image/png">
-                    </div>
-                    <div class="file-input-wrapper">
-                        <label for="input-edge-left">Left Edge</label>
-                        <input type="file" id="input-edge-left" accept="image/png">
-                    </div>
-                    <div class="file-input-wrapper">
-                        <label for="input-edge-top">Top Edge</label>
-                        <input type="file" id="input-edge-top" accept="image/png">
-                    </div>
-                    <div class="file-input-wrapper">
-                        <label for="input-fill">Inner Fill</label>
-                        <input type="file" id="input-fill" accept="image/png">
+                        <label for="input-source">Source Sheet (PNG)</label>
+                        <input type="file" id="input-source" accept="image/png">
                     </div>
                 </div>
 
                 <div class="control-group">
-                    <h2>Settings</h2>
+                    <h2>2. Grid Settings</h2>
+                    <div class="setting-item">
+                        <label for="grid-size">Cell Size (px)</label>
+                        <input type="number" id="grid-size" value="64" min="16" step="1">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h2>4. Output Settings</h2>
                     <div class="setting-item">
                         <label>Output Format</label>
                         <div class="radio-group">
@@ -59,7 +54,7 @@
                         </div>
                     </div>
                     <div class="setting-item">
-                        <label for="tile-size">Tile Size (px)</label>
+                        <label for="tile-size">Output Tile Size (px)</label>
                         <input type="number" id="tile-size" value="64" min="16" step="16">
                     </div>
                 </div>
@@ -67,10 +62,53 @@
                 <div class="actions">
                     <button id="btn-generate" class="primary-btn">Generate Preview</button>
                     <button id="btn-download" class="secondary-btn" disabled>Download PNG</button>
+                    <div id="error-msg" class="error-msg"></div>
                 </div>
             </aside>
 
+            <!-- Middle: Source Viewer & Drop Zones -->
+            <section class="work-area">
+                <div class="source-panel">
+                    <h3>3. Assign Parts (Drag & Drop)</h3>
+                    <p class="instruction">Drag a cell from the source image to the slots below.</p>
+
+                    <div class="canvas-wrapper">
+                        <canvas id="source-canvas"></canvas>
+                    </div>
+                </div>
+
+                <div class="slots-panel">
+                    <div class="slot-container">
+                        <!-- Top Row: Corners & Edge Top -->
+                        <div class="slot" data-role="outerCorner">
+                            <div class="slot-label">Outer Corner</div>
+                            <div class="slot-content"></div>
+                        </div>
+                        <div class="slot" data-role="edgeTop">
+                            <div class="slot-label">Top Edge</div>
+                            <div class="slot-content"></div>
+                        </div>
+                        <div class="slot" data-role="innerCorner">
+                            <div class="slot-label">Inner Corner</div>
+                            <div class="slot-content"></div>
+                        </div>
+
+                        <!-- Middle Row: Left Edge & Fill -->
+                        <div class="slot" data-role="edgeLeft">
+                            <div class="slot-label">Left Edge</div>
+                            <div class="slot-content"></div>
+                        </div>
+                        <div class="slot" data-role="fill">
+                            <div class="slot-label">Fill</div>
+                            <div class="slot-content"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right: Preview -->
             <section class="preview-area">
+                <h3>Preview</h3>
                 <div class="canvas-container">
                     <canvas id="preview-canvas"></canvas>
                     <div id="placeholder-text">Generated tilesheet will appear here</div>
@@ -80,4 +118,5 @@
     </div>
     <script src="script.js"></script>
 </body>
+
 </html>
