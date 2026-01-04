@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unity Auto Tile Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts for premium feel -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Auto Tile Generator</h1>
+            <p>Generate Unity-ready 16 or 47 tile bitmask sets from basic corner and edge parts.</p>
+        </header>
+
+        <main>
+            <aside class="controls">
+                <div class="control-group">
+                    <h2>Input Images</h2>
+                    <div class="file-input-wrapper">
+                        <label for="input-outer-corner">Outer Corner (Top-Left)</label>
+                        <input type="file" id="input-outer-corner" accept="image/png">
+                    </div>
+                    <div class="file-input-wrapper">
+                        <label for="input-inner-corner">Inner Corner (Top-Left)</label>
+                        <input type="file" id="input-inner-corner" accept="image/png">
+                    </div>
+                    <div class="file-input-wrapper">
+                        <label for="input-edge-left">Left Edge</label>
+                        <input type="file" id="input-edge-left" accept="image/png">
+                    </div>
+                    <div class="file-input-wrapper">
+                        <label for="input-edge-top">Top Edge</label>
+                        <input type="file" id="input-edge-top" accept="image/png">
+                    </div>
+                    <div class="file-input-wrapper">
+                        <label for="input-fill">Inner Fill</label>
+                        <input type="file" id="input-fill" accept="image/png">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h2>Settings</h2>
+                    <div class="setting-item">
+                        <label>Output Format</label>
+                        <div class="radio-group">
+                            <label>
+                                <input type="radio" name="tile-mode" value="16" checked>
+                                16-Tile
+                            </label>
+                            <label>
+                                <input type="radio" name="tile-mode" value="47">
+                                47-Tile
+                            </label>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <label for="tile-size">Tile Size (px)</label>
+                        <input type="number" id="tile-size" value="64" min="16" step="16">
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button id="btn-generate" class="primary-btn">Generate Preview</button>
+                    <button id="btn-download" class="secondary-btn" disabled>Download PNG</button>
+                </div>
+            </aside>
+
+            <section class="preview-area">
+                <div class="canvas-container">
+                    <canvas id="preview-canvas"></canvas>
+                    <div id="placeholder-text">Generated tilesheet will appear here</div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
