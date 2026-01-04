@@ -1,8 +1,8 @@
 /**
- * Auto Tile Generator Logic
+ * オートタイルジェネレーターのロジック
  */
 
-// DOM Elements
+// DOM要素
 const inputs = {
     outerCorner: document.getElementById('input-outer-corner'),
     innerCorner: document.getElementById('input-inner-corner'),
@@ -22,16 +22,16 @@ const canvas = document.getElementById('preview-canvas');
 const ctx = canvas.getContext('2d');
 const placeholderText = document.getElementById('placeholder-text');
 
-// State
+// 状態
 let loadedImages = {
-    outerCorner: null, // TL
-    innerCorner: null, // TL
-    edgeLeft: null,    // Left
-    edgeTop: null,     // Top
-    fill: null         // Center
+    outerCorner: null, // 左上
+    innerCorner: null, // 左上
+    edgeLeft: null,    // 左
+    edgeTop: null,     // 上
+    fill: null         // 中央
 };
 
-// Event Listeners
+// イベントリスナー
 Object.keys(inputs).forEach(key => {
     inputs[key].addEventListener('change', (e) => handleImageUpload(key, e.target.files[0]));
 });
@@ -39,17 +39,17 @@ Object.keys(inputs).forEach(key => {
 btnGenerate.addEventListener('click', generateTiles);
 btnDownload.addEventListener('click', downloadTiles);
 
-// Functions
+// 関数
 async function handleImageUpload(key, file) {
     if (!file) return;
     try {
         const bmp = await createImageBitmap(file);
         loadedImages[key] = bmp;
-        // Optional: show some checkmark or preview near input
+        // オプション: 入力欄の近くにチェックマークやプレビューを表示する
         inputs[key].parentElement.style.borderLeft = "3px solid #3b82f6";
     } catch (e) {
-        console.error("Failed to load image", e);
-        alert("Failed to load image");
+        console.error("画像の読み込みに失敗しました", e);
+        alert("画像の読み込みに失敗しました");
     }
 }
 
@@ -67,7 +67,7 @@ function getSettings() {
     };
 }
 
-// Utility: Resize/Draw image to a new canvas or context
+// ユーティリティ: 画像をリサイズして新しいキャンバスまたはコンテキストに描画する
 function drawResized(source, targetCtx, x, y, size, rotation = 0, flipX = false, flipY = false) {
     if (!source) return;
 
@@ -80,16 +80,16 @@ function drawResized(source, targetCtx, x, y, size, rotation = 0, flipX = false,
 }
 
 async function prepareAssets(tileSize) {
-    // We need 13 base assets scaled to tileSize
-    // Outer: TL, TR, BR, BL
-    // Inner: TL, TR, BR, BL
-    // Edge: L, R, T, B
-    // Fill
+    // 13個の基本アセットをタイルサイズに合わせてスケーリングする必要があります
+    // 外側: 左上、右上、右下、左下
+    // 内側: 左上、右上、右下、左下
+    // 端: 左、右、上、下
+    // フィル
 
-    // Create an offscreen canvas for assets
+    // アセット用のオフスクリーンキャンバスを作成
     const assetMap = {};
 
-    // Helper to generate a single asset variant
+    // 単一のアセットバリアントを生成するヘルパー
     const createAsset = (sourceKey, rot, flipX, flipY) => {
         const c = document.createElement('canvas');
         c.width = tileSize;
@@ -102,25 +102,25 @@ async function prepareAssets(tileSize) {
         return c;
     }
 
-    // Outer Corners (Input is TL)
+    // 外側の角 (入力は左上)
     assetMap['outer_tl'] = createAsset('outerCorner', 0, false, false);
     assetMap['outer_tr'] = createAsset('outerCorner', 90, false, false);
     assetMap['outer_br'] = createAsset('outerCorner', 180, false, false);
     assetMap['outer_bl'] = createAsset('outerCorner', 270, false, false);
 
-    // Inner Corners (Input is TL)
+    // 内側の角 (入力は左上)
     assetMap['inner_tl'] = createAsset('innerCorner', 0, false, false);
     assetMap['inner_tr'] = createAsset('innerCorner', 90, false, false);
     assetMap['inner_br'] = createAsset('innerCorner', 180, false, false);
     assetMap['inner_bl'] = createAsset('innerCorner', 270, false, false);
 
-    // Edges
-    assetMap['edge_l'] = createAsset('edgeLeft', 0, false, false); // Input Left
-    assetMap['edge_r'] = createAsset('edgeLeft', 0, true, false);  // Flip X for Right
-    assetMap['edge_t'] = createAsset('edgeTop', 0, false, false);  // Input Top
-    assetMap['edge_b'] = createAsset('edgeTop', 0, false, true);   // Flip Y for Bottom
+    // 端
+    assetMap['edge_l'] = createAsset('edgeLeft', 0, false, false); // 入力は左
+    assetMap['edge_r'] = createAsset('edgeLeft', 0, true, false);  // 右用にX反転
+    assetMap['edge_t'] = createAsset('edgeTop', 0, false, false);  // 入力は上
+    assetMap['edge_b'] = createAsset('edgeTop', 0, false, true);   // 下用にY反転
 
-    // Fill
+    // フィル
     assetMap['fill'] = createAsset('fill', 0, false, false);
 
     return assetMap;
@@ -129,10 +129,10 @@ async function prepareAssets(tileSize) {
 function generateTiles() {
     const { mode, tileSize } = getSettings();
 
-    // Validation
+    // バリデーション
     const missing = Object.keys(loadedImages).filter(k => !loadedImages[k]);
     if (missing.length > 0) {
-        alert(`Missing images: ${missing.join(', ')}`);
+        alert(`画像が見つかりません: ${missing.join(', ')}`);
         return;
     }
 
@@ -143,28 +143,26 @@ function generateTiles() {
         let tileList = [];
 
         if (mode === '16') {
-            // Generate standard 16 bitmasks (0-15)
-            // Bitmask: N=1, E=2, S=4, W=8 (Standard 4-bit)
-            // Wait, standard 16-tile mapping:
-            // Let's generate all 16 combinations of orthogonal neighbors.
-            // 0000 to 1111.
+            // 標準的な16ビットマスクを生成 (0-15)
+            // 標準的な16タイルのマッピング:
+            // 直交する近傍の全16通りの組み合わせを生成します。
+            // 0000 から 1111。
             for (let i = 0; i < 16; i++) {
-                // Decode
-                const north = (i & 1) ? 1 : 0; // Wait, usually N=1, E=2, S=4, W=8 is standard but let's be explicit
-                // Actually, let's use a standard visual order?
-                // 4x4 grid.
-                // Row 0: 0000(0), 1000(N), 0100(E), 1100(NE)...
-                // Let's just generate i=0..15 and place them. 
-                // Note: 'i' here will be treated as the bitmask.
-                // My bitmask convension: N=1, W=2, E=4, S=8 (Arbitrary, just need consistency)
+                // デコード
+                // 通常 N=1, E=2, S=4, W=8 ですが、ここでは明示的に記述します。
+                // 4x4 グリッド。
+                // 行 0: 0000(0), 1000(N), 0100(E), 1100(NE)...
+                // i=0..15 を生成して配置します。
+                // ここでの 'i' はビットマスクとして扱われます。
+                // ビットマスクの規約: N=1, W=2, E=4, S=8 (一貫性があれば任意でOK)
                 const n = (i & 1) ? 1 : 0;
                 const w = (i & 2) ? 1 : 0;
                 const e = (i & 4) ? 1 : 0;
                 const s = (i & 8) ? 1 : 0;
 
-                // Diagonals are assumed 1 (connected) for 16-tile basic set, 
-                // because 16-tile doesn't support "broken" diagonals.
-                // So we pass nw=1, ne=1, ...
+                // 16タイルの基本セットでは、対角線は接続されている（1）と仮定します。
+                // 16タイルは「途切れた」対角線をサポートしないためです。
+                // したがって、nw=1, ne=1... を渡します。
 
                 tileList.push({
                     n, w, e, s,
@@ -176,11 +174,11 @@ function generateTiles() {
             canvas.height = tileSize * 4;
 
         } else {
-            // 47-tile mode
-            // Generate all 256 masks, filter invalid.
-            // Invalid rule: If N=0 or W=0, then NW must be 0. (Strict blob)
-            // Loop 0..255.
-            // Bit order: N=1, W=2, E=4, S=8, NW=16, NE=32, SW=64, SE=128
+            // 47タイルモード
+            // 全256マスクを生成し、無効なものをフィルタリングします。
+            // 無効ルール: N=0 または W=0 の場合、NW は 0 でなければなりません（厳密なBlob）。
+            // ループ 0..255。
+            // ビット順序: N=1, W=2, E=4, S=8, NW=16, NE=32, SW=64, SE=128
 
             const valid = [];
             for (let i = 0; i < 256; i++) {
@@ -193,7 +191,7 @@ function generateTiles() {
                 const sw = (i & 64) ? 1 : 0;
                 const se = (i & 128) ? 1 : 0;
 
-                // Rule check
+                // ルールチェック
                 if (nw && (!n || !w)) continue;
                 if (ne && (!n || !e)) continue;
                 if (sw && (!s || !w)) continue;
@@ -202,11 +200,11 @@ function generateTiles() {
                 valid.push({ n, w, e, s, nw, ne, sw, se });
             }
 
-            // Should be exactly 47
-            console.log(`Generated ${valid.length} tiles for 47-mode`);
+            // 正確に47個になるはずです
+            console.log(`47モード用に ${valid.length} 個のタイルを生成しました`);
 
-            // Layout: 8 columns (typical texture sheet width)
-            // Rows needed: ceil(47/8) = 6 rows. Total 48 slots.
+            // レイアウト: 8列 (一般的なテクスチャシート幅)
+            // 必要な行数: ceil(47/8) = 6行。合計48スロット。
             tileList = valid;
             canvas.width = tileSize * 8;
             canvas.height = tileSize * 6;
@@ -214,7 +212,7 @@ function generateTiles() {
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Draw tiles
+        // タイルを描画
         tileList.forEach((mask, index) => {
             const col = index % (canvas.width / tileSize);
             const row = Math.floor(index / (canvas.width / tileSize));
@@ -231,79 +229,84 @@ function generateTiles() {
 function drawComposedTile(ctx, x, y, size, mask, assets) {
     const qSize = size / 2;
 
-    // TL Quadrant (Depends on N, W, NW) (Relative to the TILE)
+    // 左上象限 (N, W, NW に依存) (タイルに対する相対位置)
     drawQuadrant(ctx, x, y, qSize, 'tl', mask.n, mask.w, mask.nw, assets);
 
-    // TR Quadrant (Depends on N, E, NE)
+    // 右上象限 (N, E, NE に依存)
     drawQuadrant(ctx, x + qSize, y, qSize, 'tr', mask.n, mask.e, mask.ne, assets);
 
-    // BL Quadrant (Depends on S, W, SW)
+    // 左下象限 (S, W, SW に依存)
     drawQuadrant(ctx, x, y + qSize, qSize, 'bl', mask.s, mask.w, mask.sw, assets);
 
-    // BR Quadrant (Depends on S, E, SE)
+    // 右下象限 (S, E, SE に依存)
     drawQuadrant(ctx, x + qSize, y + qSize, qSize, 'br', mask.s, mask.e, mask.se, assets);
 }
 
 function drawQuadrant(ctx, dx, dy, size, type, v, h, d, assets) {
-    // type: 'tl', 'tr', 'bl', 'br' (Which quadrant of the TARGET tile we are drawing)
-    // v: Vertical Neighbor (0/1)
-    // h: Horizontal Neighbor (0/1)
-    // d: Diagonal Neighbor (0/1)
+    // type: 'tl', 'tr', 'bl', 'br' (描画対象のターゲットタイルのどの象限か)
+    // v: 垂直方向の近傍 (0/1)
+    // h: 水平方向の近傍 (0/1)
+    // d: 対角方向の近傍 (0/1)
 
-    // Logic: Decide which source image to use based on neighbors
+    // ロジック: 近傍に基づいてどのソース画像を使用するか決定する
     let assetName = '';
 
     if (v === 0 && h === 0) {
-        // No vertical, no horizontal -> Outer Corner
-        // Which Outer Corner? Matches the quadrant type.
-        // TL quadrant needs Outer_TL, TR needs Outer_TR, etc.
+        // 垂直なし、水平なし -> 外側の角
+        // どの外側の角？ 象限タイプと一致するもの。
+        // 左上象限にはOuter_TL、右上にはOuter_TRなどが必要。
         assetName = `outer_${type}`;
     } else if (v === 0 && h === 1) {
-        // No vertical, yes horizontal -> Edge
-        // If drawing TL, v=N(0), h=W(1). This is a Top Edge.
-        // If drawing TR, v=N(0), h=E(1). Top Edge.
-        // If drawing BL, v=S(0), h=W(1). Bottom Edge.
-        // If drawing BR, v=S(0), h=E(1). Bottom Edge.
+        // 垂直なし、水平あり -> 端
+        // 左上を描画中で、v=N(0), h=W(1) なら、これは上端。
+        // 右上を描画中で、v=N(0), h=E(1) なら、上端。
+        // 左下を描画中で、v=S(0), h=W(1) なら、下端。
+        // 右下を描画中で、v=S(0), h=E(1) なら、下端。
         if (type === 'tl' || type === 'tr') assetName = 'edge_t';
         else assetName = 'edge_b';
     } else if (v === 1 && h === 0) {
-        // Yes vertical, no horizontal -> Edge
-        // TL: N=1, W=0 -> Left Edge
-        // TR: N=1, E=0 -> Right Edge
-        // BL: S=1, W=0 -> Left Edge
-        // BR: S=1, E=0 -> Right Edge
+        // 垂直あり、水平なし -> 端
+        // TL: N=1, W=0 -> 左端
+        // TR: N=1, E=0 -> 右端
+        // BL: S=1, W=0 -> 左端
+        // BR: S=1, E=0 -> 右端
         if (type === 'tl' || type === 'bl') assetName = 'edge_l';
         else assetName = 'edge_r';
     } else if (v === 1 && h === 1) {
-        // Both vertical and horizontal present.
+        // 垂直と水平の両方が存在
         if (d === 0) {
-            // Diagonal missing -> Inner Corner
+            // 対角が欠けている -> 内側の角
             assetName = `inner_${type}`;
         } else {
-            // Full -> Fill
+            // 完全 -> フィル
             assetName = 'fill';
         }
     }
 
-    // Now draw the SPECIFIC quadrant of the selected asset
-    // Since our assets are full tiles (already rotated/flipped correctly),
-    // we just need to draw the corresponding quadrant of the asset.
-    // E.g. If we need `outer_tl`, we assume that image is correct, and we want its 'tl' quadrant?
-    // WARNING: Yes, `prepareAssets` created full tiles oriented correctly.
-    // So `outer_tl` asset is a tile where the Top-Left is the corner.
-    // So we just draw the `type` quadrant of that asset.
+    // 選択されたアセットの特定の象限を描画する
+    // アセットは（すでに正しく回転/反転された）完全なタイルなので、
+    // アセットの対応する象限を描画するだけでよい。
 
-    // Slicing coordinates from source asset
+    // ソースアセットからの切り出し座標
     let sx = 0, sy = 0;
-    // Source Asset size is `size * 2` (because size passed here is qSize)
-    // Actually assets are tileSize (e.g. 64). qSize is 32.
+    // ソースアセットのサイズは `size * 2` (ここで渡されるsizeはqSizeなので)
+    // 実際にはアセットはtileSize (例: 64)。qSizeは32。
 
-    if (type === 'tr' || type === 'br') sx = size; // Right half
-    if (type === 'bl' || type === 'br') sy = size; // Bottom half
+    if (type === 'tr' || type === 'br') sx = size; // 右半分
+    if (type === 'bl' || type === 'br') sy = size; // 下半分
 
-    const asset = assets[assetName];
-    if (asset) {
-        ctx.drawImage(asset, sx, sy, size, size, dx, dy, size, size);
+    // 1. 常に最初にフィルの背景を描画する
+    const fillAsset = assets['fill'];
+    if (fillAsset) {
+        ctx.drawImage(fillAsset, sx, sy, size, size, dx, dy, size, size);
+    }
+
+    // 2. その上に特定のパーツを描画する（重複を避けるため、それがフィルでない場合のみ）
+    if (assetName !== 'fill') {
+        const asset = assets[assetName];
+        if (asset) {
+            ctx.drawImage(asset, sx, sy, size, size, dx, dy, size, size);
+        }
     }
 }
 
